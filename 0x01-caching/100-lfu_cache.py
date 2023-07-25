@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """LFU cache."""
 from base_caching import BaseCaching
 
