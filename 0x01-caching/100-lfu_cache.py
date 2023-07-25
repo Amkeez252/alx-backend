@@ -1,40 +1,53 @@
 #!/usr/bin/python3
 """ Python caching systems """
+"""LFU cache."""
 from base_caching import BaseCaching
-from collections import OrderedDict
 
 
 class LFUCache(BaseCaching):
-    """ LFU caching system
+    """creates a LFUCache cache system without limit.
+
+    methods:
+        put(key, item): adds a key/value pair to cache
+        get(key): gets the key value from cache
     """
+
     def __init__(self):
-        """ Initialize class instance. """
+        """Init object."""
         super().__init__()
-        self.cache_data = OrderedDict()
-        self.mru = ""
+        self.uses = dict()
 
     def put(self, key, item):
-        """ Add an item in the cache
         """
-        if key and item:
-            if len(self.cache_data) >= BaseCaching.MAX_ITEMS:
-                if key in self.cache_data:
-                    self.cache_data.update({key: item})
-                    self.mru = key
-                else:
-                    # discard the most recently used item
-                    discarded = self.mru
-                    del self.cache_data[discarded]
-                    print("DISCARD: {}".format(discarded))
-                    self.cache_data[key] = item
-                    self.mru = key
-            else:
-                self.cache_data[key] = item
-                self.mru = key
+        Add an item to the cache.
+
+        Args:
+            key: The key of the item
+            item: The item to be added
+        """
+        if (key is None or item is None):
+            return
+
+        if (len(self.cache_data.keys()) == BaseCaching.MAX_ITEMS
+           and key not in self.cache_data.keys()):
+            discard_key = min(self.uses, key=self.uses.get)
+            del self.cache_data[discard_key]
+            del self.uses[discard_key]
+            print("DISCARD: {}".format(discard_key))
+        if (key in self.cache_data.keys()):
+            self.uses[key] += 1
+        else:
+            self.uses[key] = 1
+        self.cache_data[key] = item
 
     def get(self, key):
-        """ Get an item by key
         """
-        if key in self.cache_data:
-            self.mru = key
-            return self.cache_data[key]
+        Retrieve an item from the cache.
+
+        Args:
+            key: The key of the item to be retrieved
+        """
+        if (key is None or key not in self.cache_data.keys()):
+            return
+        self.uses[key] += 1
+        return self.cache_data.get(key)
